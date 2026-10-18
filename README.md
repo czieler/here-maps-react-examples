@@ -1,3 +1,5 @@
+![HERE Maps React Examples](images/here-maps-banner.png)
+
 # HERE Maps + React Examples
 
 A collection of working, focused examples of integrating HERE Maps with React, TypeScript, and Vite.
@@ -12,7 +14,7 @@ A collection of working, focused examples of integrating HERE Maps with React, T
 | **Restaurant clustering** | A static list of 12 sample restaurants, custom restaurant pins, cluster counts, and zoom interactions |
 | **Directions & route card** | HERE Routing API v8, multiple stops, flexible polyline rendering, and route summary |
 
-These are **live examples**. There are no stored API responses or mock-data modes. Opening maps and using search or routing may consume API quota. Restaurant data comes from the public OpenStreetMap Overpass service, which may be temporarily unavailable or rate-limited.
+These are **live examples**. There are no stored API responses or mock-data modes. Opening maps and using search or routing may consume API quota. Restaurant clustering uses a static list of 12 sample restaurants and makes no restaurant-data API requests.
 
 ## Setup
 
