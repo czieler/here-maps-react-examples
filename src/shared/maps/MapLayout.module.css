@@ -1,0 +1,3 @@
+/* Layout shared by the clustering and routing examples. */
+.mapRegion { position: relative; min-height: 560px; flex: 1; }
+.map { position: absolute; inset: 0; width: 100%; height: 100%; }

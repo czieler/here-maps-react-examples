@@ -1,0 +1,16 @@
+{
+  "elements": [
+    { "type": "node", "id": 101, "lat": 39.7684, "lon": -86.1581, "tags": { "amenity": "restaurant", "name": "Downtown Table", "cuisine": "american" } },
+    { "type": "node", "id": 102, "lat": 39.7721, "lon": -86.1602, "tags": { "amenity": "restaurant", "name": "Market Street Kitchen", "cuisine": "american; regional" } },
+    { "type": "node", "id": 103, "lat": 39.7647, "lon": -86.1514, "tags": { "amenity": "restaurant", "name": "Canal-side Cafe", "cuisine": "coffee_shop" } },
+    { "type": "node", "id": 104, "lat": 39.7796, "lon": -86.1452, "tags": { "amenity": "restaurant", "name": "North Meridian Grill", "cuisine": "steak_house" } },
+    { "type": "node", "id": 105, "lat": 39.7532, "lon": -86.1657, "tags": { "amenity": "restaurant", "name": "White River Noodles", "cuisine": "asian" } },
+    { "type": "node", "id": 106, "lat": 39.7698, "lon": -86.1724, "tags": { "amenity": "restaurant", "name": "Westside Pizzeria", "cuisine": "pizza" } },
+    { "type": "node", "id": 107, "lat": 39.7612, "lon": -86.1433, "tags": { "amenity": "restaurant", "name": "Georgia Street Deli", "cuisine": "sandwich" } },
+    { "type": "node", "id": 108, "lat": 39.7823, "lon": -86.1571, "tags": { "amenity": "restaurant", "name": "Circle City Ramen", "cuisine": "ramen" } },
+    { "type": "node", "id": 109, "lat": 39.7478, "lon": -86.1562, "tags": { "amenity": "restaurant", "name": "South Market Bistro", "cuisine": "french" } },
+    { "type": "way", "id": 110, "center": { "lat": 39.7751, "lon": -86.181 }, "tags": { "amenity": "restaurant", "name": "Garden District Cafe", "cuisine": "vegetarian" } },
+    { "type": "node", "id": 111, "lat": 39.7583, "lon": -86.1762, "tags": { "amenity": "restaurant", "name": "Victory Field Tacos", "cuisine": "mexican" } },
+    { "type": "node", "id": 112, "lat": 39.7871, "lon": -86.1374, "tags": { "amenity": "restaurant", "name": "Old North Supper Club", "cuisine": "american" } }
+  ]
+}

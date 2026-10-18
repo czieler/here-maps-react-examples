@@ -1,0 +1,80 @@
+.routeCard {
+  position: absolute;
+  z-index: 20;
+  top: 18px;
+  left: 18px;
+  width: min(390px, calc(100% - 36px));
+  overflow: hidden;
+  border: 1px solid #d8dde1;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 97%);
+  box-shadow: 0 3px 16px rgb(0 0 0 / 22%);
+}
+
+.routeSummary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e4e7e9;
+  font-size: 0.88rem;
+}
+
+.routeSummary span {
+  color: #59636b;
+  text-align: right;
+}
+
+.routeStop {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 14px;
+}
+
+.routeStop + .routeStop {
+  border-top: 1px solid #eef0f1;
+}
+
+.stopIcon {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #00a6b5;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.destination {
+  background: #00a6b5;
+}
+
+.routeStop strong,
+.routeStop small {
+  display: block;
+}
+
+.routeStop strong {
+  font-size: 0.82rem;
+}
+
+.routeStop small {
+  margin-top: 2px;
+  color: #667078;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 760px) {
+  .routeCard {
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+  }
+}
+
+
+.fullHeightRegion { height: 100%; min-height: 0; }
