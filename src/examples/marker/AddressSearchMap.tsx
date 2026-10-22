@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import H from '@here/maps-api-for-javascript';
 import { useHereMap } from '../../shared/maps/useHereMap';
 import styles from './AddressSearchMap.module.css';
-import { createPinIcon } from '../../shared/maps/pinIcon';
+import { bubbleAnchorAbovePin, createPinIcon } from '../../shared/maps/pinIcon';
 
 type Position = { lat: number; lng: number };
 type Suggestion = { id: string; title: string; address?: { label?: string }; position?: Position; resultType?: string };
@@ -39,6 +39,12 @@ export function AddressSearchMap({ apiKey }: { apiKey: string }) {
   const sequenceRef = useRef(0);
   const selectionRef = useRef(0);
 
+  // Created once rather than per search: constructing an H.map.Icon from an
+  // inline SVG decodes it asynchronously the first time, and building a
+  // fresh one on every selection risked that decode racing the pan/zoom this
+  // function triggers right after adding the marker.
+  const pinIcon = useMemo(() => createPinIcon(), []);
+
   useEffect(() => {
     if (!map || !ui) return;
     return () => {
@@ -50,13 +56,16 @@ export function AddressSearchMap({ apiKey }: { apiKey: string }) {
     };
   }, [map, ui]);
 
+  // Whether the current query/open state is one a search applies to. Items
+  // and the busy indicator are gated by this when rendered (below) instead
+  // of being reset by the effect, so there's no synchronous setState here.
+  const canSearch = query.trim().length >= 3 && open;
+
   useEffect(() => {
     const value = query.trim();
     requestRef.current?.abort();
     const sequence = ++sequenceRef.current;
     if (value.length < 3 || !open) {
-      setItems([]);
-      setBusy(false);
       return;
     }
     const controller = new AbortController();
@@ -107,8 +116,7 @@ export function AddressSearchMap({ apiKey }: { apiKey: string }) {
       if (markerRef.current && markerTapRef.current) markerRef.current.removeEventListener('tap', markerTapRef.current);
       ui.getBubbles().forEach((bubble) => ui.removeBubble(bubble));
       if (markerRef.current) map.removeObject(markerRef.current);
-      const pinIcon = createPinIcon();
-      const marker = new H.map.Marker(position, { icon: pinIcon });
+      const marker = new H.map.Marker(position, { icon: pinIcon, data: null });
       const label = item.address?.label || item.title;
       const markerPosition = position;
       const openBubble = () => {
@@ -123,15 +131,21 @@ export function AddressSearchMap({ apiKey }: { apiKey: string }) {
           address.textContent = label;
           content.appendChild(address);
         }
-        const bubble = new H.ui.InfoBubble(markerPosition, { content, offset: { x: 0, y: -22 } });
+        const bubble = new H.ui.InfoBubble(bubbleAnchorAbovePin(map, markerPosition), { content });
         ui.addBubble(bubble);
       };
       marker.addEventListener('tap', openBubble);
       markerTapRef.current = openBubble;
       map.addObject(marker);
       markerRef.current = marker;
-      map.setCenter(position, true);
-      map.setZoom(16, true);
+      // A single setLookAtData animates center and zoom together. Calling
+      // setCenter and setZoom separately starts two concurrent animations
+      // that can fight each other on a large jump (e.g. the very first
+      // search, moving from the default view to wherever was searched) —
+      // that's what was leaving the marker off-screen, not a render timing
+      // issue: diagnostics showed it was present and visible, just projected
+      // outside the viewport because the camera never actually settled there.
+      map.getViewModel().setLookAtData({ position, zoom: 16 }, true);
     } catch (cause) {
       if (selection === selectionRef.current) setError(requestError(cause));
     }
@@ -141,9 +155,9 @@ export function AddressSearchMap({ apiKey }: { apiKey: string }) {
     <div className={styles.searchPanel}>
       <label htmlFor="here-address-search">Search for an address</label>
       <div className={styles.searchWrap}>
-        <input id="here-address-search" type="text" role="combobox" aria-autocomplete="list" aria-expanded={open && items.length > 0} aria-controls="here-address-options" aria-activedescendant={activeIndex >= 0 ? `here-address-${activeIndex}` : undefined} placeholder="Start typing an address…" autoComplete="off" value={query} onChange={(event) => { selectionRef.current++; setQuery(event.target.value); setSelectedLabel(''); setOpen(true); }} onFocus={() => { if (query.trim().length >= 3 && !selectedLabel) setOpen(true); }} onKeyDown={(event) => {
+        <input id="here-address-search" type="text" role="combobox" aria-autocomplete="list" aria-expanded={canSearch && items.length > 0} aria-controls="here-address-options" aria-activedescendant={activeIndex >= 0 ? `here-address-${activeIndex}` : undefined} placeholder="Start typing an address…" autoComplete="off" value={query} onChange={(event) => { selectionRef.current++; setQuery(event.target.value); setSelectedLabel(''); setOpen(true); }} onFocus={() => { if (query.trim().length >= 3 && !selectedLabel) setOpen(true); }} onKeyDown={(event) => {
           if (event.key === 'Escape') { setOpen(false); setActiveIndex(-1); }
-          if (!open || !items.length) return;
+          if (!canSearch || !items.length) return;
           if (event.key === 'ArrowDown') { event.preventDefault(); setActiveIndex((index) => (index + 1) % items.length); }
           if (event.key === 'ArrowUp') { event.preventDefault(); setActiveIndex((index) => index <= 0 ? items.length - 1 : index - 1); }
           if (event.key === 'Enter' && activeIndex >= 0) { event.preventDefault(); void choose(items[activeIndex]); }
@@ -158,8 +172,8 @@ export function AddressSearchMap({ apiKey }: { apiKey: string }) {
           markerRef.current = null; markerTapRef.current = null;
           ui?.getBubbles().forEach((bubble) => ui.removeBubble(bubble));
         }}>×</button>}
-        {busy && <span className={styles.loading}>Searching…</span>}
-        {open && items.length > 0 && <ul id="here-address-options" className={styles.results} role="listbox">
+        {canSearch && busy && <span className={styles.loading}>Searching…</span>}
+        {canSearch && items.length > 0 && <ul id="here-address-options" className={styles.results} role="listbox">
           {items.map((item, index) => <li id={`here-address-${index}`} key={`${item.id}-${index}`} role="option" aria-selected={activeIndex === index}>
             <button type="button" className={activeIndex === index ? styles.active : ''} onMouseDown={(event) => event.preventDefault()} onClick={() => void choose(item)}><strong>{item.title}</strong>{item.address?.label && item.address.label !== item.title && <small>{item.address.label}</small>}</button>
           </li>)}

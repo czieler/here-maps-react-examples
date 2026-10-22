@@ -1,5 +1,5 @@
 import mapLayout from '../../shared/maps/MapLayout.module.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import H from '@here/maps-api-for-javascript';
 import { useHereMap } from '../../shared/maps/useHereMap';
 import { loadRestaurants } from './restaurantData';
@@ -18,7 +18,11 @@ const mapConfiguration = {
 
 export function RestaurantMap({ apiKey }: RestaurantMapProps) {
   const { containerRef, map } = useHereMap(apiKey, mapConfiguration);
-  const [status, setStatus] = useState('12 sample restaurants · zoom in to split clusters');
+
+  // The sample list never changes, so it's loaded once up front (not on every
+  // render) rather than inside the map-setup effect below.
+  const restaurants = useMemo(() => loadRestaurants(), []);
+  const status = `${restaurants.length.toLocaleString()} restaurants · zoom in to split clusters`;
 
   useEffect(() => {
     if (!map) return;
@@ -33,8 +37,6 @@ export function RestaurantMap({ apiKey }: RestaurantMapProps) {
     });
 
     {
-        const restaurants = loadRestaurants();
-
         const points = restaurants.map((restaurant) =>
           new H.clustering.DataPoint(restaurant.lat, restaurant.lng, 1, restaurant),
         );
@@ -54,7 +56,7 @@ export function RestaurantMap({ apiKey }: RestaurantMapProps) {
               return marker;
             },
             getNoisePresentation(point: H.clustering.INoisePoint) {
-              const marker = new H.map.Marker(point.getPosition(), { icon: pinIcon });
+              const marker = new H.map.Marker(point.getPosition(), { icon: pinIcon, data: point });
               marker.setData(point);
               return marker;
             },
@@ -82,15 +84,13 @@ export function RestaurantMap({ apiKey }: RestaurantMapProps) {
             map.getViewModel().setLookAtData({ bounds });
           }
         }
-
-        setStatus(`${restaurants.length.toLocaleString()} restaurants · zoom in to split clusters`);
     }
 
     return () => {
       if (provider && onTap) provider.removeEventListener('tap', onTap);
       if (clusterLayer) map.removeLayer(clusterLayer);
     };
-  }, [map]);
+  }, [map, restaurants]);
 
   return (
     <section className={mapLayout.mapRegion}>

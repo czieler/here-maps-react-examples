@@ -3,7 +3,7 @@ import H from '@here/maps-api-for-javascript';
 import { useHereMap } from '../../shared/maps/useHereMap';
 import styles from '../clustering/RestaurantMap.module.css';
 import mapLayout from '../../shared/maps/MapLayout.module.css';
-import { createPinIcon } from '../../shared/maps/pinIcon';
+import { bubbleAnchorAbovePin, createPinIcon } from '../../shared/maps/pinIcon';
 
 type InfoBubbleMapProps = { apiKey: string };
 const location = { lat: 39.7684, lng: -86.1581 };
@@ -15,14 +15,13 @@ export function InfoBubbleMap({ apiKey }: InfoBubbleMapProps) {
   useEffect(() => {
     if (!map || !ui) return;
 
-    const marker = new H.map.Marker(location, { icon: createPinIcon() });
+    const marker = new H.map.Marker(location, { icon: createPinIcon(), data: null });
     map.addObject(marker);
 
     const openInfoBubble = () => {
       // Keep only one bubble open when the marker is clicked repeatedly.
       ui.getBubbles().forEach((bubble) => ui.removeBubble(bubble));
-      const bubble = new H.ui.InfoBubble(location, {
-        offset: { x: 0, y: -22 },
+      const bubble = new H.ui.InfoBubble(bubbleAnchorAbovePin(map, location), {
         content: '<div style="min-width:150px;padding:4px"><strong>Indianapolis, Indiana</strong><div>Example map marker</div></div>',
       });
       ui.addBubble(bubble);
